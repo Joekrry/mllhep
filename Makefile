@@ -4,14 +4,12 @@ LDLIBS   := -lm
 AR       := ar
 
 BUILD    := build
-SRC_DIR  := src
-TEST_DIR := tests
 
-SRCS := $(wildcard $(SRC_DIR)/*.c)
-OBJS := $(patsubst $(SRC_DIR)/%.c,$(BUILD)/%.o,$(SRCS))
+SRCS := $(wildcard src/*.c) $(wildcard alloc/*.c)
+OBJS := $(SRCS:%.c=$(BUILD)/%.o)
 
-TEST_SRCS := $(wildcard $(TEST_DIR)/test_*.c)
-TEST_BINS := $(patsubst $(TEST_DIR)/%.c,$(BUILD)/%,$(TEST_SRCS))
+TEST_SRCS := $(wildcard tests/test_*.c)
+TEST_BINS := $(TEST_SRCS:tests/%.c=$(BUILD)/%)
 
 LIB := $(BUILD)/libmllhep.a
 
@@ -21,17 +19,17 @@ all: lib
 
 lib: $(LIB)
 
-$(LIB): $(OBJS) | $(BUILD)
+$(LIB): $(OBJS)
+	@mkdir -p $(dir $@)
 	$(AR) rcs $@ $(OBJS)
 
-$(BUILD)/%.o: $(SRC_DIR)/%.c | $(BUILD)
+$(BUILD)/%.o: %.c
+	@mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) -c $< -o $@
 
-$(BUILD)/%: $(TEST_DIR)/%.c $(OBJS) | $(BUILD)
+$(BUILD)/%: tests/%.c $(OBJS)
+	@mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) $< $(OBJS) $(LDLIBS) -o $@
-
-$(BUILD):
-	mkdir -p $(BUILD)
 
 test: $(TEST_BINS)
 	@fail=0; for t in $(TEST_BINS); do ./$$t || fail=1; done; exit $$fail
