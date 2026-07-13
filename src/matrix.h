@@ -37,4 +37,14 @@ static inline f64 *mat_row(const Mat *m, usize r) {
     return m->data + r * m->cols;
 }
 
+/* Core linear algebra. Each op writes into a freshly allocated result from
+   the given arena; the operands are left untouched. Shape preconditions
+   (matching dims for add/sub, x->cols == y->rows for matmul) are checked
+   with assert. */
+Mat mat_add(Arena *a, const Mat *x, const Mat *y);
+Mat mat_sub(Arena *a, const Mat *x, const Mat *y);
+Mat mat_scale(Arena *a, const Mat *x, f64 s);
+Mat mat_matmul(Arena *a, const Mat *x, const Mat *y);
+Mat mat_transpose(Arena *a, const Mat *x);
+
 #endif /* MLLHEP_SRC_MATRIX_H */

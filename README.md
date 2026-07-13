@@ -33,7 +33,7 @@ types.h  --->  alloc/  --->  src/  --->  tests/
 **Main components**
 - **`types.h`** - defines the numeric aliases (`i8` to `i64`, `u8` to `u64`, `f32`, `f64`, `usize`, `isize`). Wraps `<stdint.h>` and `<stddef.h>` so the rest of the library never spells out a raw C integer type.
 - **`alloc/arena.h`** - bump allocator that hands out memory by advancing an offset into `mmap`ed blocks. There is no per-object free; memory is reclaimed in bulk with `arena_reset` or rolled back to an `arena_mark`.
-- **`src/matrix.h`** - the `Vec` and `Mat` types, both dense `f64` with `Mat` stored row-major. Allocation is arena-backed, so the types carry no ownership and are freed with the arena rather than individually.
+- **`src/matrix.h`** - the `Vec` and `Mat` types, both dense `f64` with `Mat` stored row-major. Allocation is arena-backed, so the types carry no ownership and are freed with the arena rather than individually. Also provides the core matrix operations (add, sub, scale, matmul, transpose), each returning a fresh arena-allocated result.
 - **`tests/test.h`** - single-header assertion harness. Each test file is an independent executable that reports a pass or fail summary through `test_summary()`.
 
 ### Installation Instructions
@@ -80,8 +80,8 @@ make test
 | Fixture | Tests | Purpose |
 |---------|-------|---------|
 | `tests/test_types.c` | 12 | Confirms the width and signedness of every alias in `types.h`. |
-| `tests/test_matrix.c` | 6 | Allocates a matrix and vector from an arena and checks zeroing and element access. |
-| **Total** | **18** | |
+| `tests/test_matrix.c` | 20 | Arena-backed vector/matrix allocation plus add, sub, scale, matmul and transpose. |
+| **Total** | **32** | |
 
 ### Test Results
 ```bash

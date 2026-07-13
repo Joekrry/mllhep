@@ -1,5 +1,6 @@
 #include "matrix.h"
 
+#include <assert.h>
 #include <string.h>
 
 Vec vec_alloc(Arena *a, usize len) {
@@ -27,4 +28,60 @@ Mat mat_zeros(Arena *a, usize rows, usize cols) {
     Mat m = mat_alloc(a, rows, cols);
     memset(m.data, 0, rows * cols * sizeof(f64));
     return m;
+}
+
+Mat mat_add(Arena *a, const Mat *x, const Mat *y) {
+    assert(x->rows == y->rows && x->cols == y->cols);
+    Mat r = mat_alloc(a, x->rows, x->cols);
+    usize n = x->rows * x->cols;
+    for (usize i = 0; i < n; i++) {
+        r.data[i] = x->data[i] + y->data[i];
+    }
+    return r;
+}
+
+Mat mat_sub(Arena *a, const Mat *x, const Mat *y) {
+    assert(x->rows == y->rows && x->cols == y->cols);
+    Mat r = mat_alloc(a, x->rows, x->cols);
+    usize n = x->rows * x->cols;
+    for (usize i = 0; i < n; i++) {
+        r.data[i] = x->data[i] - y->data[i];
+    }
+    return r;
+}
+
+Mat mat_scale(Arena *a, const Mat *x, f64 s) {
+    Mat r = mat_alloc(a, x->rows, x->cols);
+    usize n = x->rows * x->cols;
+    for (usize i = 0; i < n; i++) {
+        r.data[i] = x->data[i] * s;
+    }
+    return r;
+}
+
+Mat mat_matmul(Arena *a, const Mat *x, const Mat *y) {
+    assert(x->cols == y->rows);
+    Mat r = mat_zeros(a, x->rows, y->cols);
+    /* ikj order keeps the inner loop sequential over both y and r rows */
+    for (usize i = 0; i < x->rows; i++) {
+        for (usize k = 0; k < x->cols; k++) {
+            f64 xik = x->data[i * x->cols + k];
+            const f64 *yrow = y->data + k * y->cols;
+            f64 *rrow = r.data + i * r.cols;
+            for (usize j = 0; j < y->cols; j++) {
+                rrow[j] += xik * yrow[j];
+            }
+        }
+    }
+    return r;
+}
+
+Mat mat_transpose(Arena *a, const Mat *x) {
+    Mat r = mat_alloc(a, x->cols, x->rows);
+    for (usize i = 0; i < x->rows; i++) {
+        for (usize j = 0; j < x->cols; j++) {
+            r.data[j * r.cols + i] = x->data[i * x->cols + j];
+        }
+    }
+    return r;
 }
