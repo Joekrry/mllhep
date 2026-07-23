@@ -56,6 +56,30 @@ int main(void) {
     CHECK(mat_get(&pt, 2, 1) == mat_get(&p, 1, 2));
     CHECK(mat_get(&pt, 0, 1) == mat_get(&p, 1, 0));
 
+    /* dot / norm / elementwise mul / elementwise div */
+    Vec u = vec_alloc(&a, 3);
+    u.data[0] = 1.0; u.data[1] = -2.0; u.data[2] = 2.0;
+    Vec w = vec_alloc(&a, 3);
+    w.data[0] = 4.0; w.data[1] = 5.0; w.data[2] = 6.0;
+
+    CHECK(vec_dot(&u, &w) == 6.0); /* 1*4 + -2*5 + 2*6 */
+    CHECK(vec_norm1(&u) == 5.0);   /* |1| + |-2| + |2| */
+    CHECK(vec_norm2(&u) == 3.0);   /* sqrt(1 + 4 + 4) */
+
+    Vec uw = vec_mul(&a, &u, &w);
+    CHECK(uw.data[0] == 4.0 && uw.data[1] == -10.0 && uw.data[2] == 12.0);
+
+    Vec wu = vec_div(&a, &w, &u);
+    CHECK(wu.data[0] == 4.0 && wu.data[2] == 3.0);
+
+    /* outer product: 2-vec by 3-vec -> 2x3 */
+    Vec ov = vec_alloc(&a, 2);
+    ov.data[0] = 2.0; ov.data[1] = 3.0;
+    Mat outer = mat_outer(&a, &ov, &w);
+    CHECK(outer.rows == 2 && outer.cols == 3);
+    CHECK(mat_get(&outer, 0, 0) == 8.0);  /* 2*4 */
+    CHECK(mat_get(&outer, 1, 2) == 18.0); /* 3*6 */
+
     arena_destroy(&a);
     return TEST_SUMMARY("matrix");
 }

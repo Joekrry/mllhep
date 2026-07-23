@@ -47,4 +47,14 @@ Mat mat_scale(Arena *a, const Mat *x, f64 s);
 Mat mat_matmul(Arena *a, const Mat *x, const Mat *y);
 Mat mat_transpose(Arena *a, const Mat *x);
 
+/* Vector ops. Lengths must match on x and y; checked with assert. */
+f64 vec_dot(const Vec *x, const Vec *y);
+f64 vec_norm1(const Vec *x);
+f64 vec_norm2(const Vec *x);
+Vec vec_mul(Arena *a, const Vec *x, const Vec *y);
+Vec vec_div(Arena *a, const Vec *x, const Vec *y);
+
+/* Outer product: x->len rows by y->len cols, result[i][j] = x[i] * y[j]. */
+Mat mat_outer(Arena *a, const Vec *x, const Vec *y);
+
 #endif /* MLLHEP_SRC_MATRIX_H */

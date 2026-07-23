@@ -1,6 +1,7 @@
 #include "matrix.h"
 
 #include <assert.h>
+#include <math.h>
 #include <string.h>
 
 Vec vec_alloc(Arena *a, usize len) {
@@ -81,6 +82,57 @@ Mat mat_transpose(Arena *a, const Mat *x) {
     for (usize i = 0; i < x->rows; i++) {
         for (usize j = 0; j < x->cols; j++) {
             r.data[j * r.cols + i] = x->data[i * x->cols + j];
+        }
+    }
+    return r;
+}
+
+f64 vec_dot(const Vec *x, const Vec *y) {
+    assert(x->len == y->len);
+    f64 s = 0.0;
+    for (usize i = 0; i < x->len; i++) {
+        s += x->data[i] * y->data[i];
+    }
+    return s;
+}
+
+f64 vec_norm1(const Vec *x) {
+    f64 s = 0.0;
+    for (usize i = 0; i < x->len; i++) {
+        s += fabs(x->data[i]);
+    }
+    return s;
+}
+
+f64 vec_norm2(const Vec *x) {
+    return sqrt(vec_dot(x, x));
+}
+
+Vec vec_mul(Arena *a, const Vec *x, const Vec *y) {
+    assert(x->len == y->len);
+    Vec r = vec_alloc(a, x->len);
+    for (usize i = 0; i < x->len; i++) {
+        r.data[i] = x->data[i] * y->data[i];
+    }
+    return r;
+}
+
+Vec vec_div(Arena *a, const Vec *x, const Vec *y) {
+    assert(x->len == y->len);
+    Vec r = vec_alloc(a, x->len);
+    for (usize i = 0; i < x->len; i++) {
+        r.data[i] = x->data[i] / y->data[i];
+    }
+    return r;
+}
+
+Mat mat_outer(Arena *a, const Vec *x, const Vec *y) {
+    Mat r = mat_alloc(a, x->len, y->len);
+    for (usize i = 0; i < x->len; i++) {
+        f64 xi = x->data[i];
+        f64 *rrow = r.data + i * r.cols;
+        for (usize j = 0; j < y->len; j++) {
+            rrow[j] = xi * y->data[j];
         }
     }
     return r;
