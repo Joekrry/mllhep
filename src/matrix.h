@@ -21,9 +21,15 @@ typedef struct {
    with arena_reset or arena_reset_to on the owning arena. */
 Vec vec_alloc(Arena *a, usize len);
 Vec vec_zeros(Arena *a, usize len);
+Vec vec_ones(Arena *a, usize len);
+Vec vec_copy(Arena *a, const Vec *x);
 
 Mat mat_alloc(Arena *a, usize rows, usize cols);
 Mat mat_zeros(Arena *a, usize rows, usize cols);
+Mat mat_ones(Arena *a, usize rows, usize cols);
+/* n x n identity matrix. */
+Mat mat_eye(Arena *a, usize n);
+Mat mat_copy(Arena *a, const Mat *x);
 
 static inline f64 mat_get(const Mat *m, usize r, usize c) {
     return m->data[r * m->cols + c];
@@ -56,5 +62,26 @@ Vec vec_div(Arena *a, const Vec *x, const Vec *y);
 
 /* Outer product: x->len rows by y->len cols, result[i][j] = x[i] * y[j]. */
 Mat mat_outer(Arena *a, const Vec *x, const Vec *y);
+
+/* xorshift64star PRNG. Deterministic given a seed, no external entropy
+   source, so results are reproducible across runs. */
+typedef struct {
+    u64 state;
+} Rng;
+
+Rng rng_seed(u64 seed);
+/* Uniform in [lo, hi). */
+f64 rng_uniform(Rng *r, f64 lo, f64 hi);
+/* Normal via Box-Muller transform. */
+f64 rng_normal(Rng *r, f64 mean, f64 stddev);
+
+Vec vec_rand_uniform(Arena *a, usize len, Rng *r, f64 lo, f64 hi);
+Vec vec_rand_normal(Arena *a, usize len, Rng *r, f64 mean, f64 stddev);
+Mat mat_rand_uniform(Arena *a, usize rows, usize cols, Rng *r, f64 lo, f64 hi);
+Mat mat_rand_normal(Arena *a, usize rows, usize cols, Rng *r, f64 mean, f64 stddev);
+
+/* Debug printing, one line per row for matrices. */
+void vec_print(const Vec *v);
+void mat_print(const Mat *m);
 
 #endif /* MLLHEP_SRC_MATRIX_H */

@@ -80,6 +80,43 @@ int main(void) {
     CHECK(mat_get(&outer, 0, 0) == 8.0);  /* 2*4 */
     CHECK(mat_get(&outer, 1, 2) == 18.0); /* 3*6 */
 
+    /* ones / eye / copy */
+    Vec ones = vec_ones(&a, 3);
+    CHECK(ones.data[0] == 1.0 && ones.data[2] == 1.0);
+
+    Mat onesm = mat_ones(&a, 2, 2);
+    CHECK(mat_get(&onesm, 0, 0) == 1.0 && mat_get(&onesm, 1, 1) == 1.0);
+
+    Mat eye = mat_eye(&a, 3);
+    CHECK(mat_get(&eye, 0, 0) == 1.0 && mat_get(&eye, 1, 1) == 1.0);
+    CHECK(mat_get(&eye, 0, 1) == 0.0 && mat_get(&eye, 2, 0) == 0.0);
+
+    Vec ucopy = vec_copy(&a, &u);
+    CHECK(ucopy.data[0] == u.data[0] && ucopy.data[1] == u.data[1]);
+    ucopy.data[0] = 99.0;
+    CHECK(u.data[0] == 1.0); /* copy is independent of source */
+
+    Mat xcopy = mat_copy(&a, &x);
+    CHECK(mat_get(&xcopy, 0, 0) == 1.0 && mat_get(&xcopy, 1, 1) == 4.0);
+
+    /* deterministic RNG: same seed gives same stream */
+    Rng r1 = rng_seed(42);
+    Rng r2 = rng_seed(42);
+    f64 a1 = rng_uniform(&r1, 0.0, 1.0);
+    f64 a2 = rng_uniform(&r2, 0.0, 1.0);
+    CHECK(a1 == a2);
+
+    Vec ru = vec_rand_uniform(&a, 100, &r1, -1.0, 1.0);
+    for (usize i = 0; i < ru.len; i++) {
+        CHECK(ru.data[i] >= -1.0 && ru.data[i] < 1.0);
+    }
+
+    Mat rn = mat_rand_normal(&a, 50, 50, &r1, 0.0, 1.0);
+    f64 rnsum = 0.0;
+    usize rncount = rn.rows * rn.cols;
+    for (usize i = 0; i < rncount; i++) rnsum += rn.data[i];
+    CHECK_NEAR(rnsum / (f64)rncount, 0.0, 0.3); /* sample mean near 0 */
+
     arena_destroy(&a);
     return TEST_SUMMARY("matrix");
 }
